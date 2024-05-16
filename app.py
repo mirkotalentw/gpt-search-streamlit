@@ -1,6 +1,6 @@
 from openai import OpenAI
 import os
-import app as st
+import streamlit as st
 from dotenv import load_dotenv
 import json
  
