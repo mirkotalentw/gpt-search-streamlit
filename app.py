@@ -1824,6 +1824,8 @@ def query_location_v2(city=None, country=None, distance=0):
     
     if location and distance > 0:
         location += f' DISTANCE {distance}'
+    elif location and distance<=0:
+        location += f' DISTANCE 50'
         
     if country_normalized:
         location += f' COUNTRY {country_normalized}'
