@@ -1818,7 +1818,7 @@ def query_location(city=None, country=None, distance=0):
 
 def query_location_v2(city=None, country=None, distance=0):
     location = ''
-    city_normalized, country_normalized = get_city_country(url="http://photon.talentwunder.io:2322", city=city, country=country, lang='de')
+    city_normalized, country_normalized = get_city_country(url="https://photon.komoot.io", city=city, country=country, lang='de')
     if city_normalized:
         location += f'{city_normalized}'
     
