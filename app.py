@@ -1611,7 +1611,7 @@ def get_city_country(url, city, country, lang='de'):
         if city:
             url_request = f"{url}/api?q={city}&lang={lang}&limit=3&bbox=-27.627108,33.036997,65.029825,70.750216" 
         else:
-            url_request = f"{url}/api?q={country}&lang={lang}#&limit=3&bbox=-27.627108,33.036997,65.029825,70.750216"
+            url_request = f"{url}/api?q={country}&lang={lang}&limit=3&bbox=-27.627108,33.036997,65.029825,70.750216"
             
         print(url_request)
         
@@ -1696,8 +1696,8 @@ class GptOutput(BaseModel):
 system_instruction = """
 You are an assistant tasked with extracting specific information from user inputs where applicable. Extract the following details:
 - Job title
-- City related to the job position
-- Country related to the job position
+- City related to the job position (please extract it in the original language, do not translate it, just fix if there is a typo)
+- Country related to the job position (please extract it in the original language, do not translate it, just fix if there is a typo)
 - Radius (distance to the location specified)
 - Mandatory skills (key skills required for the role, but please provide shorter versions of the skills if possible for example 'python' instead of 'Python programming language', 'machine learning' instead of 'Machine Learning algorithms' and etc.)
 - Optional skills (desirable skills that are beneficial for the role, but please provide shorter versions of the skills if possible for example 'python' instead of 'Python programming language', 'machine learning' instead of 'Machine Learning algorithms' and etc.)
