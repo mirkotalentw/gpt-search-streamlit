@@ -1612,6 +1612,8 @@ def get_city_country(url, city, country, lang='de'):
             url_request = f"{url}/api?q={city}&lang={lang}&limit=3&bbox=-27.627108,33.036997,65.029825,70.750216" 
         else:
             url_request = f"{url}/api?q={country}&lang={lang}#&limit=3&bbox=-27.627108,33.036997,65.029825,70.750216"
+            
+        print(url_request)
         
         response = requests.get(url_request)
         data = response.json()
@@ -1628,7 +1630,7 @@ def get_city_country(url, city, country, lang='de'):
                 break  
     
             elif data_properties['type'] == 'country' and not found_city:
-                country_normalized 
+                country_normalized = data_properties['country'] 
                 break  
 
     except Exception as e:
@@ -1659,6 +1661,7 @@ class GptOutput(BaseModel):
     personIsNot: Optional[List[str]] = None
     previouslyAs: Optional[str] = None
     doesNotPreviouslyWorkAs: Optional[str] = None
+    lang: Optional[str] = 'en'
     
     @validator('mandatorySkills', pre=True, always=True)
     def set_default_for_mandatory_skills(cls, v):
@@ -1709,6 +1712,7 @@ You are an assistant tasked with extracting specific information from user input
 - 'previouslyAs': previously worked as (specify the previous job title if mentioned)
 - 'doesNotPreviouslyWorkAs': specify the job title the person should not have previously worked as
 - Industry (sector, field of the job position like finance, accounting and etc.)
+- lang: language of the job description (default is English) - if the language is not English, please specify the language code (e.g. 'de' for German, 'fr' for French and etc.)
 
 Ensure the output is structured as follows:
 {
@@ -1733,7 +1737,8 @@ Ensure the output is structured as follows:
     "personIsNot": [],
     "previouslyAs": "",
     "doesNotPreviouslyWorkAs": "",
-    "industry": ""
+    "industry": "",
+    "lang": ""
 }
 """
 # Placeholder for a real authentication mechanism
@@ -1816,19 +1821,21 @@ def query_location(city=None, country=None, distance=0):
     return location
 
 
-def query_location_v2(city=None, country=None, distance=0):
+def query_location_v2(city=None, country=None, distance=0, lang='de'):
     location = ''
-    city_normalized, country_normalized = get_city_country(url="https://photon.komoot.io", city=city, country=country, lang='de')
+    city_normalized, country_normalized = get_city_country(url="https://photon.komoot.io", city=city, country=country, lang=lang)
     if city_normalized:
-        location += f'{city_normalized}'
+        location += f' IN {city_normalized}'
     
     if location and distance > 0:
         location += f' DISTANCE {distance}'
     elif location and distance<=0:
         location += f' DISTANCE 50'
         
-    if country_normalized:
+    if location and country_normalized:
         location += f' COUNTRY {country_normalized}'
+    elif country_normalized:
+        location = f' COUNTRY {country_normalized}'
         
     return location
 
@@ -1847,9 +1854,9 @@ def query_languages_v2(languages=[]):
 def boolean_query_v2(job_title, city, country, radius, mandatory_skills, optional_skills,
                                 languages, yearsOfExperienceFrom, yearsOfExperienceTo, yearsInJobFrom, yearsInJobTo,
                                 email, phone, worksAt, doesNotWorkAt, previouslyWorkedAt, doesNotPreviouslyWorkAt,
-                                personIs, personIsNot, doesNotPreviouslyWorkAs, previouslyAs):
+                                personIs, personIsNot, doesNotPreviouslyWorkAs, previouslyAs, lang):
     query = query_title(job_title=job_title, suggestions=False)
-    location_query = query_location_v2(city, country, radius)
+    location_query = query_location_v2(city, country, radius, lang)
     languages_query = query_languages_v2(languages)
     
     # if skills_query:
@@ -1860,7 +1867,7 @@ def boolean_query_v2(job_title, city, country, radius, mandatory_skills, optiona
         query += f' AND ({optional_query})'
 
     if location_query:
-        query += f' IN {location_query}'
+        query += f' {location_query}'
         
     if languages_query:
         query += f' SPEAKS {languages_query}'
@@ -1944,12 +1951,12 @@ def display_main_app():
                 personIsNot = gpt_output.model_dump().get("personIsNot")
                 previouslyAs = gpt_output.model_dump().get("previouslyAs")
                 doesNotPreviouslyWorkAs = gpt_output.model_dump().get("doesNotPreviouslyWorkAs")
-        
+                lang = gpt_output.model_dump().get("lang")
         
                 result = boolean_query_v2(job_title, city, country, radius, mandatory_skills, optional_skills,
                                         languages, yearsOfExperienceFrom, yearsOfExperienceTo, yearsInJobFrom, yearsInJobTo,
                                         email, phone, worksAt, doesNotWorkAt, previouslyWorkedAt, doesNotPreviouslyWorkAt,
-                                        personIs, personIsNot, doesNotPreviouslyWorkAs, previouslyAs)
+                                        personIs, personIsNot, doesNotPreviouslyWorkAs, previouslyAs, lang)
                 st.write(result)
                 
  
