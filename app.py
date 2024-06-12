@@ -1619,6 +1619,8 @@ def get_city_country(url, city, country, lang='de'):
         data = response.json()
         
         found_city = False
+        
+        print(response.text)
 
         for feature in data['features']:
             data_properties = feature['properties']
@@ -1639,7 +1641,7 @@ def get_city_country(url, city, country, lang='de'):
     return city_normalized, country_normalized
 
 class GptOutput(BaseModel):
-    jobTitle: str
+    jobTitle: Optional[List[str]] = None
     city: Optional[str] = None
     country: Optional[str] = None
     radius: Optional[int] = 0
@@ -1653,15 +1655,22 @@ class GptOutput(BaseModel):
     yearsInJobTo: Optional[int] = 0
     email: Optional[bool] = False
     phone: Optional[bool] = False
-    worksAt: Optional[str] = None
-    doesNotWorkAt: Optional[str] = None
-    previouslyWorkedAt: Optional[str] = None
-    doesNotPreviouslyWorkAt: Optional[str] = None
+    worksAt: Optional[List[str]] = None
+    doesNotWorkAt: Optional[List[str]] = None
+    previouslyWorkedAt: Optional[List[str]] = None
+    doesNotPreviouslyWorkAt: Optional[List[str]] = None
     personIs: Optional[List[str]] = None
     personIsNot: Optional[List[str]] = None
     previouslyAs: Optional[str] = None
     doesNotPreviouslyWorkAs: Optional[str] = None
     lang: Optional[str] = 'en'
+    level: Optional[str] = None
+    
+    @validator('jobTitle', pre=True, always=True)
+    def set_default_for_job_title(cls, v):
+        if v is None:
+            return []
+        return v
     
     @validator('mandatorySkills', pre=True, always=True)
     def set_default_for_mandatory_skills(cls, v):
@@ -1692,10 +1701,34 @@ class GptOutput(BaseModel):
         if v is None:
             return []
         return v
- 
+
+    @validator('worksAt', pre=True, always=True)
+    def set_default_for_works_at(cls, v):
+        if v is None:
+            return []
+        return v
+    
+    @validator('doesNotWorkAt', pre=True, always=True)
+    def set_default_for_does_not_works_at(cls, v):
+        if v is None:
+            return []
+        return v
+    
+    @validator('previouslyWorkedAt', pre=True, always=True)
+    def set_default_for_previously_worked_at(cls, v):
+        if v is None:
+            return []
+        return v
+    
+    @validator('doesNotPreviouslyWorkAt', pre=True, always=True)
+    def set_default_for_does_not__previously_worked_at(cls, v):
+        if v is None:
+            return []
+        return v
+    
 system_instruction = """
 You are an assistant tasked with extracting specific information from user inputs where applicable. Extract the following details:
-- Job title
+- Job title (list of job titles extracted from the user input, please exclude geneder things like m/f/d, w/m/d and etc.)
 - City related to the job position (please extract it in the original language, do not translate it, just fix if there is a typo)
 - Country related to the job position (please extract it in the original language, do not translate it, just fix if there is a typo)
 - Radius (distance to the location specified)
@@ -1713,10 +1746,11 @@ You are an assistant tasked with extracting specific information from user input
 - 'doesNotPreviouslyWorkAs': specify the job title the person should not have previously worked as
 - Industry (sector, field of the job position like finance, accounting and etc.)
 - lang: language of the job description (default is English) - if the language is not English, please specify the language code (e.g. 'de' for German, 'fr' for French and etc.)
+- level: if seniority level is mentioned in the job description, please specify it here (e.g. 'senior', 'junior', 'medior', etc.)
 
-Ensure the output is structured as follows:
+Ensure the output is structured as follows, please make sure no other information is included in the output (such as word json as json object, etc.). Each output must start with { and end with }:
 {
-    "jobTitle": "",
+    "jobTitle": [],
     "city": "",
     "country": "",
     "radius": 0,
@@ -1729,16 +1763,17 @@ Ensure the output is structured as follows:
     "yearsInJobTo": 0,
     "email": false,
     "phone": false,
-    "worksAt": "",
-    "doesNotWorkAt": "",
-    "previouslyWorkedAt": "",
-    "doesNotPreviouslyWorkAt": "",
+    "worksAt": [],
+    "doesNotWorkAt": [],
+    "previouslyWorkedAt": [],
+    "doesNotPreviouslyWorkAt": [],
     "personIs": [],
     "personIsNot": [],
     "previouslyAs": "",
     "doesNotPreviouslyWorkAs": "",
     "industry": "",
-    "lang": ""
+    "lang": "",
+    "level": ""
 }
 """
 # Placeholder for a real authentication mechanism
@@ -1781,8 +1816,10 @@ def data_extraction(job_description):
     try:
         data = json.loads(generated_text)
         return GptOutput(**data)
-    except:
-        return GptOutput(jobTitle="")
+    except Exception as e:
+        print(f"Error in parsing the GPT output: {e}")
+        st.error(data)
+        # return GptOutput()
     
 def denormalize_job_title(s):
     pattern = r'\b(\S*/in)\b'
@@ -1800,9 +1837,9 @@ def denormalize_job_title(s):
     
     
 def query_title(job_title, suggestions):
-    job_titles = []
+    job_titles = job_title
     
-    job_titles.extend(denormalize_job_title(job_title))
+    # job_titles.extend(denormalize_job_title(job_title))
         
     job_query = ' OR '.join([job if ' ' not in job else f'"{job}"' for job in job_titles])
     
@@ -1847,24 +1884,35 @@ def query_languages(optional_skills=[], mandatory_skills=[]):
 
 
 def query_languages_v2(languages=[]):
-    return ' AND '.join([f'"{lang}"' for lang in languages])
+    langs = {lang for lang in languages if lang.lower() in languages_all}
+    return ' AND '.join([f'"{lang}"' for lang in langs])
 
     
     
 def boolean_query_v2(job_title, city, country, radius, mandatory_skills, optional_skills,
                                 languages, yearsOfExperienceFrom, yearsOfExperienceTo, yearsInJobFrom, yearsInJobTo,
                                 email, phone, worksAt, doesNotWorkAt, previouslyWorkedAt, doesNotPreviouslyWorkAt,
-                                personIs, personIsNot, doesNotPreviouslyWorkAs, previouslyAs, lang):
-    query = query_title(job_title=job_title, suggestions=False)
+                                personIs, personIsNot, doesNotPreviouslyWorkAs, previouslyAs, lang, level):
+    
+    query = ""
+    
+    if job_title and len(job_title) > 0:
+        query = query_title(job_title=job_title, suggestions=False)
     location_query = query_location_v2(city, country, radius, lang)
-    languages_query = query_languages_v2(languages)
+    
+    languages_query = ''
+    if languages:
+        languages_query = query_languages_v2(languages)
     
     # if skills_query:
     #     query += f' AND {skills_query}'
     skills = list(set(optional_skills + mandatory_skills))
     if len(skills) > 0:
         optional_query = ' OR '.join([f'"{skill}"' for skill in skills if skill.lower() not in languages_all and skill!=''])
-        query += f' AND ({optional_query})'
+        if query:
+            query += f' AND ({optional_query})'
+        else:
+            query += f'({optional_query})'
 
     if location_query:
         query += f' {location_query}'
@@ -1879,32 +1927,37 @@ def boolean_query_v2(job_title, city, country, radius, mandatory_skills, optiona
         query += f' PREVIOUSLY_AS NOT "{doesNotPreviouslyWorkAs}"'
         
     if worksAt:
-        query += f' AT "{worksAt}"'
+        worksAtQuery = ' OR '.join([f'"{work}"' for work in worksAt])
+        query += f' AT {worksAtQuery}'
         
     if doesNotWorkAt:
-        query += f' AT NOT "{doesNotWorkAt}"'
+        doesNotWorkAtQuery = ' OR '.join([f'"{work}"' for work in doesNotWorkAt])
+        query += f' AT NOT {doesNotWorkAtQuery}'
         
     if previouslyWorkedAt:
-        query += f' PREVIOUSLY_AT "{previouslyWorkedAt}"'
+        previouslyWorkedAtQuery = ' OR '.join([f'"{work}"' for work in previouslyWorkedAt])
+        query += f' PREVIOUSLY_AT {previouslyWorkedAtQuery}'
         
     if doesNotPreviouslyWorkAt:
-        query += f' PREVIOUSLY_AT NOT "{doesNotPreviouslyWorkAt}"'
+        doesNotPreviouslyWorkAtQuery = ' OR '.join([f'"{work}"' for work in doesNotPreviouslyWorkAt])
+        query += f' PREVIOUSLY_AT NOT {doesNotPreviouslyWorkAtQuery}'
         
+    predefined_elements = ['FEMALE', 'MALE', 'CONSULTANT', 'EXECUTIVE', 'FREELANCER', 'SCIENTIST', 'STUDENT']
     if len(personIs):
-        queryPersonIs = ' '.join([f' IS {person.upper()}' for person in personIs])
+        queryPersonIs = ' '.join([f' IS {person.upper()}' for person in personIs if person.upper() in predefined_elements])
         query += queryPersonIs
         
     if len(personIsNot):
-        queryPersonIsNot = ' '.join([f' IS NOT {person.upper()}' for person in personIsNot])
+        queryPersonIsNot = ' '.join([f' IS NOT {person.upper()}' for person in personIsNot if person.upper() in predefined_elements])
         query += queryPersonIsNot
         
     if (yearsOfExperienceFrom>0) or (yearsOfExperienceTo>0):
-        if (yearsOfExperienceTo == 0):
+        if ((yearsOfExperienceTo == 0) or (yearsOfExperienceTo <= yearsOfExperienceFrom)):
             yearsOfExperienceTo = yearsOfExperienceFrom+10
         query += f' YEARS_WORKING {yearsOfExperienceFrom} TO {yearsOfExperienceTo}'
         
     if (yearsInJobFrom>0) or (yearsInJobTo>0):
-        if (yearsInJobTo == 0):
+        if ((yearsInJobTo == 0) or (yearsInJobTo <= yearsInJobFrom)):
             yearsInJobTo = yearsInJobFrom+10
         query += f' YEARS_IN_JOB {yearsInJobFrom} TO {yearsInJobTo}' 
         
@@ -1913,6 +1966,9 @@ def boolean_query_v2(job_title, city, country, radius, mandatory_skills, optiona
         
     if phone:
         query += f' HAS PHONE'
+        
+    if level and (level.lower() != 'senior'):
+        query += f' AS {level.upper()}'
             
     return query
                 
@@ -1920,7 +1976,7 @@ def boolean_query_v2(job_title, city, country, radius, mandatory_skills, optiona
 def display_main_app():
     st.title('AI Search Generator')
     selected_model = "gpt-4o"
-    user_input = st.text_area("Enter your prompt:", height=150)
+    user_input = st.text_area("Enter your prompt:", height=50)
  
     if st.button('Generate Text'):
         if user_input:
@@ -1952,11 +2008,12 @@ def display_main_app():
                 previouslyAs = gpt_output.model_dump().get("previouslyAs")
                 doesNotPreviouslyWorkAs = gpt_output.model_dump().get("doesNotPreviouslyWorkAs")
                 lang = gpt_output.model_dump().get("lang")
+                level = gpt_output.model_dump().get("level")
         
                 result = boolean_query_v2(job_title, city, country, radius, mandatory_skills, optional_skills,
                                         languages, yearsOfExperienceFrom, yearsOfExperienceTo, yearsInJobFrom, yearsInJobTo,
                                         email, phone, worksAt, doesNotWorkAt, previouslyWorkedAt, doesNotPreviouslyWorkAt,
-                                        personIs, personIsNot, doesNotPreviouslyWorkAs, previouslyAs, lang)
+                                        personIs, personIsNot, doesNotPreviouslyWorkAs, previouslyAs, lang, level)
                 st.write(result)
                 
  
