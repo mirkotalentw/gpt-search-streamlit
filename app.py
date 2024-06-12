@@ -1605,7 +1605,8 @@ languages_all = set(languages_en) | set(languages_de)
 
 def get_city_country(url, city, country, lang='de'):
     city_normalized, country_normalized = "", ""
-    
+    if not lang:
+        lang = 'de'
     try:
         
         if city:
