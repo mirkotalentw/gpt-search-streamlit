@@ -1969,7 +1969,7 @@ def boolean_query_v2(job_title, city, country, radius, mandatory_skills, optiona
         doesNotPreviouslyWorkAtQuery = ' OR '.join([f'"{work}"' for work in doesNotPreviouslyWorkAt])
         query += f' PREVIOUSLY_AT NOT {doesNotPreviouslyWorkAtQuery}'
         
-    predefined_elements = ['FEMALE', 'MALE', 'CONSULTANT', 'EXECUTIVE', 'FREELANCER', 'SCIENTIST', 'STUDENT']
+    predefined_elements = ['FEMALE', 'MALE', 'CONSULTANT', 'ENTREPRENEUR', 'FREELANCER', 'SCIENTIST', 'STUDENT']
     if len(personIs):
         queryPersonIs = ' '.join([f' IS {person.upper()}' for person in personIs if person.upper() in predefined_elements])
         query += queryPersonIs
