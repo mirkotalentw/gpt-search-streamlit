@@ -4,7 +4,7 @@ import os
 import streamlit as st
 from dotenv import load_dotenv
 import json
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, validator, Extra
 from typing import List, Optional
 import requests
  
@@ -1727,6 +1727,32 @@ class GptOutput(BaseModel):
             return []
         return v
     
+    class Config:
+        extra = Extra.ignore
+        
+        
+def clean_json_output(generated_text: str) -> str:
+    try:
+        start_idx = generated_text.index('{')
+        end_idx = generated_text.rindex('}') + 1
+        json_text = generated_text[start_idx:end_idx]
+        return json_text
+    except ValueError as e:
+        print(f"Error in finding JSON boundaries: {e}")
+        return "{}"
+    
+def parse_gpt_output(generated_text: str) -> GptOutput:
+    cleaned_text = clean_json_output(generated_text)
+    try:
+        data = json.loads(cleaned_text)
+        return GptOutput(**data)
+    except json.JSONDecodeError as e:
+        print(f"Error in parsing the JSON output: {e}")
+        return GptOutput()
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        return GptOutput()
+    
 system_instruction = """
 You are an assistant tasked with extracting specific information from user inputs where applicable. Extract the following details:
 - Job title (list of job titles extracted from the user input, please exclude geneder things like m/f/d, w/m/d and etc.)
@@ -1815,11 +1841,11 @@ def data_extraction(job_description):
     generated_text = completion.choices[0].message.content  
     print(generated_text)
     try:
-        data = json.loads(generated_text)
-        return GptOutput(**data)
+        parsed_output = parse_gpt_output(generated_text)
+        return parsed_output
     except Exception as e:
         print(f"Error in parsing the GPT output: {e}")
-        st.error(data)
+        st.error(parsed_output)
         # return GptOutput()
     
 def denormalize_job_title(s):
