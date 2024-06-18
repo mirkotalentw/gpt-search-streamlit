@@ -1754,27 +1754,93 @@ def parse_gpt_output(generated_text: str) -> GptOutput:
         return GptOutput()
     
 system_instruction = """
-You are an assistant tasked with extracting specific information from user inputs where applicable. Extract the following details:
-- Job title (list of job titles extracted from the user input, please exclude geneder things like m/f/d, w/m/d and etc.)
-- City related to the job position (please extract it in the original language, do not translate it, just fix if there is a typo)
-- Country related to the job position (please extract it in the original language, do not translate it, just fix if there is a typo)
-- Radius (distance to the location specified)
-- Mandatory skills (key skills required for the role, but please provide shorter versions of the skills if possible for example 'python' instead of 'Python programming language', 'machine learning' instead of 'Machine Learning algorithms' and etc.)
-- Optional skills (desirable skills that are beneficial for the role, but please provide shorter versions of the skills if possible for example 'python' instead of 'Python programming language', 'machine learning' instead of 'Machine Learning algorithms' and etc.)
-- Languages required
-- Years of experience required (specify as a range if possible)
-- Years in job represents the number of years the person should have been in the current job position
-- Email (indicate whether an email address is required in the applicant's profile)
-- Phone (indicate whether a phone number is required in the applicant's profile)
-- Company preferences (include preferences such as 'worksAt', 'doesNotWorkAt', 'previouslyWorkedAt', 'doesNotPreviouslyWorkAt' specifically for company names, please exclude industries from this)
-- 'personIs': a list with potential entries including 'Female', 'Male', 'Consultant', 'Executive', 'Freelancer', 'Scientist', 'Student' (add to the list based on user input)
-- 'personIsNot': a list with potential entries including 'Consultant', 'Executive', 'Freelancer', 'Scientist', 'Student' (add to the list based on user input stating the person should NOT be one of these)
-- 'previouslyAs': previously worked as (specify the previous job title if mentioned)
-- 'doesNotPreviouslyWorkAs': specify the job title the person should not have previously worked as
-- Industry (sector, field of the job position like finance, accounting and etc.)
-- level: if seniority level is mentioned in the job description, please specify it here (e.g. 'senior', 'junior', 'medior', etc.)
-
-Ensure the output is structured as follows, please make sure no other information is included in the output (such as word json as json object, etc.). Each output must start with { and end with }:
+You are an assistant tasked with extracting specific information from user inputs where applicable. Follow these instructions carefully to extract and structure the required details.
+ 
+Extraction Requirements:
+1. Job Title:
+    a) Extract the job titles mentioned in the user input.
+    b) Exclude any gender-related terms (e.g., m/f/d, w/m/d).
+    c) Format as a list.
+ 
+2. City:
+    a) Extract the city related to the job position.
+    b) Maintain the original language (fix typos if necessary).
+    c) Do not translate the city name.
+ 
+3. Country:
+    a) Extract the country related to the job position.
+    b) Maintain the original language (fix typos if necessary).
+    c) Do not translate the country name.
+ 
+4. Radius:
+    a) Extract the distance to the location specified.
+    b) Format as a numerical value.
+ 
+5. Mandatory Skills:
+    a) Extract key skills required for the role.
+    b) Provide shorter versions of the skills (e.g., 'python' instead of 'Python programming language').
+ 
+6. Optional Skills:
+    a) Extract desirable skills that are beneficial for the role.
+    b) Provide shorter versions of the skills (e.g., 'python' instead of 'Python programming language').
+ 
+7. Languages Required:
+    a) Extract the languages required for the role.
+    b) Format as a list.
+ 
+8. Years of Experience Required:
+    a) Extract the required years of experience.
+    b) Specify as a range (from minimum to maximum).
+ 
+9. Years in Job:
+    a) Extract the number of years the person should have been in the current job position.
+    b) Specify as a range (from minimum to maximum).
+ 
+10. Email:
+    a) Indicate whether an email address is required in the applicant's profile.
+    b) Format as a boolean (true or false).
+ 
+11. Phone:
+    a) Indicate whether a phone number is required in the applicant's profile.
+    b) Format as a boolean (true or false).
+ 
+12. Company Preferences:
+    a) Extract preferences for company names. Categories:
+        - worksAt: List of preferred companies.
+        - doesNotWorkAt: List of companies to avoid.
+        - previouslyWorkedAt: List of companies the applicant has worked at before.
+        - doesNotPreviouslyWorkAt: List of companies the applicant should not have worked at before.
+    b) Exclude industry mentions.
+ 
+13. Person Is:
+    a) Extract descriptors for the person (e.g., 'Female', 'Male', 'Consultant', 'Executive', 'Freelancer', 'Scientist', 'Student').
+    b) Format as a list based on user input.
+ 
+14. Person Is Not:
+    a) Extract descriptors the person should not be (e.g., 'Consultant', 'Executive', 'Freelancer', 'Scientist', 'Student').
+    b) Format as a list based on user input.
+ 
+15. Previously As:
+    a) Extract the previous job title if mentioned.
+    b) Format as a string.
+ 
+16. Does Not Previously Work As:
+    a) Specify the job title the person should not have previously worked as.
+    b) Format as a string.
+ 
+17. Industry:
+    a) Extract the sector or field of the job position (e.g., finance, accounting).
+    b) Format as a string.
+ 
+18. Seniority Level:
+    a) If mentioned, extract the seniority level (e.g., 'senior', 'junior', 'medior').
+    b) Format as a string.
+ 
+OUTPUT STRUCTURE:
+Ensure the output is structured as follows.
+Each output must start with "{" and end with "}".
+Do not include any other information or format the output as a JSON object.
+ 
 {
     "jobTitle": [],
     "city": "",
@@ -1800,6 +1866,8 @@ Ensure the output is structured as follows, please make sure no other informatio
     "industry": "",
     "level": ""
 }
+ 
+Make sure to adhere strictly to this format to avoid any errors.
 """
 # Placeholder for a real authentication mechanism
 def check_credentials(username, password):
@@ -2002,7 +2070,7 @@ def display_main_app():
     st.title('AI Search Generator')
     selected_model = "gpt-4o"
     lang_option = st.selectbox(
-    "Language for the location?",
+    "Application language:",
     ("de", "en"))
     user_input = st.text_area("Enter your prompt:", height=50)
  
