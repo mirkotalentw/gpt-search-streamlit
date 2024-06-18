@@ -1613,15 +1613,11 @@ def get_city_country(url, city, country, lang='de'):
             url_request = f"{url}/api?q={city}&lang={lang}&limit=3&bbox=-27.627108,33.036997,65.029825,70.750216" 
         else:
             url_request = f"{url}/api?q={country}&lang={lang}&limit=3&bbox=-27.627108,33.036997,65.029825,70.750216"
-            
-        print(url_request)
         
         response = requests.get(url_request)
         data = response.json()
         
         found_city = False
-        
-        print(response.text)
 
         for feature in data['features']:
             data_properties = feature['properties']
@@ -1905,7 +1901,6 @@ def data_extraction(job_description):
                 ])
     
     generated_text = completion.choices[0].message.content  
-    print(generated_text)
     try:
         parsed_output = parse_gpt_output(generated_text)
         return parsed_output
@@ -1918,22 +1913,32 @@ def denormalize_job_title(s):
     pattern = r'\b(\S*/in)\b'
 
     matches = re.findall(pattern, s)
-    if not matches:
-        return [s]  
+    print(s)
 
-    if ' ' in s.strip():
-        without_in = re.sub(pattern, lambda m: m.group(1)[:-3], s)  # Remove /in
-        with_in = re.sub(pattern, lambda m: m.group(1)[:-3] + 'in', s)  # Replace /in with in
-        return [without_in, with_in]
+    if matches:
+        if ' ' in s.strip():
+            without_in = re.sub(pattern, lambda m: m.group(1)[:-3], s)  # Remove /in
+            with_in = re.sub(pattern, lambda m: m.group(1)[:-3] + 'in', s)  # Replace /in with in
+            return [without_in, with_in]
+        else:
+            return [re.sub(pattern, lambda m: m.group(1)[:-3] + '*', s)]
     else:
-        return [re.sub(pattern, lambda m: m.group(1)[:-3] + '*', s)]
+        if ' ' in s.strip():
+            return [s, s + 'in']
+        else:
+            return [s + '*']
     
     
-def query_title(job_title, suggestions):
-    job_titles = job_title
+def query_title(job_title, lang, suggestions):
     
-    # job_titles.extend(denormalize_job_title(job_title))
-        
+    if lang == 'de':
+        job_titles = []
+        for job in job_title:
+            job_titles.extend(denormalize_job_title(job))
+        job_titles = list(set(job_titles))
+    else:
+        job_titles = list(set(job_title))
+    
     job_query = ' OR '.join([job if ' ' not in job else f'"{job}"' for job in job_titles])
     
     return f'({job_query})'
@@ -1990,7 +1995,7 @@ def boolean_query_v2(job_title, city, country, radius, mandatory_skills, optiona
     query = ""
     
     if job_title and len(job_title) > 0:
-        query = query_title(job_title=job_title, suggestions=False)
+        query = query_title(job_title=job_title, lang=lang, suggestions=False)
     location_query = query_location_v2(city, country, radius, lang)
     
     languages_query = ''
