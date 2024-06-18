@@ -1772,7 +1772,6 @@ You are an assistant tasked with extracting specific information from user input
 - 'previouslyAs': previously worked as (specify the previous job title if mentioned)
 - 'doesNotPreviouslyWorkAs': specify the job title the person should not have previously worked as
 - Industry (sector, field of the job position like finance, accounting and etc.)
-- lang: language of the job description (default is English) - if the language is not English, please specify the language code (e.g. 'de' for German, 'fr' for French and etc.)
 - level: if seniority level is mentioned in the job description, please specify it here (e.g. 'senior', 'junior', 'medior', etc.)
 
 Ensure the output is structured as follows, please make sure no other information is included in the output (such as word json as json object, etc.). Each output must start with { and end with }:
@@ -1799,7 +1798,6 @@ Ensure the output is structured as follows, please make sure no other informatio
     "previouslyAs": "",
     "doesNotPreviouslyWorkAs": "",
     "industry": "",
-    "lang": "",
     "level": ""
 }
 """
@@ -2003,6 +2001,9 @@ def boolean_query_v2(job_title, city, country, radius, mandatory_skills, optiona
 def display_main_app():
     st.title('AI Search Generator')
     selected_model = "gpt-4o"
+    lang_option = st.selectbox(
+    "Language for the location?",
+    ("de", "en"))
     user_input = st.text_area("Enter your prompt:", height=50)
  
     if st.button('Generate Text'):
@@ -2034,13 +2035,12 @@ def display_main_app():
                 personIsNot = gpt_output.model_dump().get("personIsNot")
                 previouslyAs = gpt_output.model_dump().get("previouslyAs")
                 doesNotPreviouslyWorkAs = gpt_output.model_dump().get("doesNotPreviouslyWorkAs")
-                lang = gpt_output.model_dump().get("lang")
                 level = gpt_output.model_dump().get("level")
         
                 result = boolean_query_v2(job_title, city, country, radius, mandatory_skills, optional_skills,
                                         languages, yearsOfExperienceFrom, yearsOfExperienceTo, yearsInJobFrom, yearsInJobTo,
                                         email, phone, worksAt, doesNotWorkAt, previouslyWorkedAt, doesNotPreviouslyWorkAt,
-                                        personIs, personIsNot, doesNotPreviouslyWorkAs, previouslyAs, lang, level)
+                                        personIs, personIsNot, doesNotPreviouslyWorkAs, previouslyAs, lang_option, level)
                 st.write(result)
                 
  
