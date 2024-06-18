@@ -2061,7 +2061,7 @@ def boolean_query_v2(job_title, city, country, radius, mandatory_skills, optiona
         query += f' HAS PHONE'
         
     if level and (level.lower() != 'senior'):
-        query += f' AS {level.upper()}'
+        query += f' AS {level}'
             
     return query
                 
