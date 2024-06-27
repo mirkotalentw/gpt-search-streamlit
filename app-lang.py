@@ -1791,6 +1791,9 @@ Extraction Requirements:
 6. Optional Skills:
     a) Extract desirable skills that are beneficial for the role.
     b) Provide shorter versions of the skills (e.g., 'python' instead of 'Python programming language').
+    c) Educational level if mentioned add as skill (e.g., 'Master's degree' then add 'Master's degree' as well)
+    d) For educational level add if makes sense the field of study (e.g., 'Master's degree in Computer Science' then add 'Computer Science' as well)
+    e) e) If the suggestions parameter is set to True, provide 2-6 skills suggestions. Is already exists large number of skills, add just 2-3 and if there is small number of skills, expand them with 6-7 skills, and so on. The value of the 'suggestions' parameter is {SUGGESTION}.
  
 7. Languages Required:
     a) Extract the languages required for the role.
@@ -1819,7 +1822,7 @@ Extraction Requirements:
         - previouslyWorkedAt: List of companies the applicant has worked at before.
         - doesNotPreviouslyWorkAt: List of companies the applicant should not have worked at before.
     b) Exclude industry mentions.
-    c) Exclude startup as it is not a company name.
+    c) Exclude word startup as it is not considered as a company name. (e.g. previously worked at a startup should not be considered as a company name)
  
 13. Person Is:
     a) Extract descriptors for the person (e.g., 'Female', 'Male', 'Consultant', 'Executive', 'Freelancer', 'Scientist', 'Student').
@@ -1907,6 +1910,7 @@ def data_extraction(job_description, suggestions="False"):
     completion = client.chat.completions.create(
                   model='gpt-4o',
                   temperature=0,
+                  top_p=0,
                   messages=[
                     {"role": "system", "content": instruction},
                     {"role": "user", "content": job_description},
@@ -2020,9 +2024,9 @@ def query_languages_v3(mandatory_languages=[], optional_languages=[]):
         
         if len(mandatory_langs) > 0:
             for lang in optional_langs:
-                optional_query = ' OR '.join([f'"{l}"' for l in list(mandatory_langs) + [lang] if l.lower() in languages_all])
+                optional_query = ' AND '.join([f'"{l}"' for l in list(mandatory_langs) + [lang] if l.lower() in languages_all])
                 # optional_query = f' {mandatory_query} OR "{lang}"'
-                full_query += f' AND ({optional_query})' 
+                full_query += f' OR ({optional_query})' 
         else:
             full_query += ' OR '.join([f'"{lang}"' for lang in optional_langs])
         
