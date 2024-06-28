@@ -1824,7 +1824,7 @@ Extraction Requirements:
     d) DO NOT ADD STARTUP AS A COMPANY NAME!
  
 13. Person Is:
-    a) From the job description, identify if any of the following descriptors are explicitly mentioned: 'Female', 'Male', 'Consultant', 'Executive', 'Freelancer', 'Scientist', 'Student'.
+    a) From the job description, identify if any of the following descriptors are explicitly mentioned: 'Consultant', 'Executive', 'Freelancer', 'Scientist', 'Student'.
     b) If a descriptor is mentioned, include it in the personIs list.
     c) Format the extracted descriptors as a list.
  
@@ -1954,7 +1954,7 @@ Extraction Requirements:
     d) DO NOT ADD STARTUP AS A COMPANY NAME!
  
 13. Person Is:
-    a) From the job description, identify if any of the following descriptors are explicitly mentioned: 'Female', 'Male', 'Consultant', 'Executive', 'Freelancer', 'Scientist', 'Student'.
+    a) From the job description, identify if any of the following descriptors are explicitly mentioned: 'Consultant', 'Executive', 'Freelancer', 'Scientist', 'Student'.
     b) If a descriptor is mentioned, include it in the personIs list.
     c) Format the extracted descriptors as a list.
  
@@ -2224,7 +2224,7 @@ def boolean_query_v2(job_title, city, country, radius, mandatory_skills, optiona
         doesNotPreviouslyWorkAtQuery = ' OR '.join([f'"{work}"' for work in doesNotPreviouslyWorkAt])
         query += f' PREVIOUSLY_AT NOT {doesNotPreviouslyWorkAtQuery}'
         
-    predefined_elements = ['FEMALE', 'MALE', 'CONSULTANT', 'ENTREPRENEUR', 'FREELANCER', 'SCIENTIST', 'STUDENT']
+    predefined_elements = ['CONSULTANT', 'ENTREPRENEUR', 'FREELANCER', 'SCIENTIST', 'STUDENT']
     if len(personIs):
         queryPersonIs = ' '.join([f' IS {person.upper()}' for person in personIs if person.upper() in predefined_elements])
         query += queryPersonIs
