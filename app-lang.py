@@ -1767,8 +1767,7 @@ Extraction Requirements:
     a) Extract the job titles mentioned in the user input.
     b) Exclude any gender-related terms (e.g., m/f/d, w/m/d).
     c) Format as a list.
-    d) Ensure the job titles are in the original language and if exist variation on gender in german language, add it (e.g., 'Software Engineer' then add 'Software Engineerin' as well)
-    e) If the suggestions parameter is set to True, provide 2-4 job title suggestions. This applies both when a job title is explicitly mentioned in the input and when no job titles are identified. For each suggested job title, also include its gender variant in German (if applicable). Ensure all suggestions and their gender variants are included in the output list. The value of the 'suggestions' parameter is {SUGGESTION}.
+    d) Ensure the job titles are in the original language and if exist variation on gender in german language, add it (e.g., 'Software Engineer' then add 'Software Engineerin' as well). ALWAYS ADD THE GENDER VARIATION IN GERMAN LANGUAGE!
  
 2. City:
     a) Extract the city related to the job position.
@@ -1793,7 +1792,6 @@ Extraction Requirements:
     b) Provide shorter versions of the skills (e.g., 'python' instead of 'Python programming language').
     c) Educational level if mentioned add as skill (e.g., 'Master's degree' then add 'Master's degree' as well)
     d) For educational level add if makes sense the field of study (e.g., 'Master's degree in Computer Science' then add 'Computer Science' as well)
-    e) e) If the suggestions parameter is set to True, provide 2-6 skills suggestions. Is already exists large number of skills, add just 2-3 and if there is small number of skills, expand them with 6-7 skills, and so on. The value of the 'suggestions' parameter is {SUGGESTION}.
  
 7. Languages Required:
     a) Extract the languages required for the role.
@@ -1823,10 +1821,142 @@ Extraction Requirements:
         - doesNotPreviouslyWorkAt: List of companies the applicant should not have worked at before.
     b) Exclude industry mentions.
     c) Exclude word startup as it is not considered as a company name. (e.g. previously worked at a startup should not be considered as a company name)
+    d) DO NOT ADD STARTUP AS A COMPANY NAME!
  
 13. Person Is:
-    a) Extract descriptors for the person (e.g., 'Female', 'Male', 'Consultant', 'Executive', 'Freelancer', 'Scientist', 'Student').
+    a) From the job description, identify if any of the following descriptors are explicitly mentioned: 'Female', 'Male', 'Consultant', 'Executive', 'Freelancer', 'Scientist', 'Student'.
+    b) If a descriptor is mentioned, include it in the personIs list.
+    c) Format the extracted descriptors as a list.
+ 
+14. Person Is Not:
+    a) Extract descriptors the person should not be (e.g., 'Consultant', 'Executive', 'Freelancer', 'Scientist', 'Student').
     b) Format as a list based on user input.
+ 
+15. Previously As:
+    a) Extract the previous job title if mentioned.
+    b) Format as a string.
+ 
+16. Does Not Previously Work As:
+    a) Specify the job title the person should not have previously worked as.
+    b) Format as a string.
+ 
+17. Industry:
+    a) Extract the sector or field of the job position (e.g., finance, accounting).
+    b) Format as a string.
+ 
+18. Seniority Level:
+    a) If mentioned, extract the seniority level (e.g., 'senior', 'junior', 'medior').
+    b) Format as a string.
+ 
+OUTPUT STRUCTURE:
+Ensure the output is structured as follows.
+Each output must start with "{" and end with "}".
+Do not include any other information or format the output as a JSON object.
+ 
+{
+    "jobTitle": [],
+    "city": "",
+    "country": "",
+    "radius": 0,
+    "mandatorySkills": [],
+    "optionalSkills": [],
+    "mandatoryLanguages": [],
+    "optionalLanguages": [],
+    "yearsOfExperienceFrom": 0,
+    "yearsOfExperienceTo": 0,
+    "yearsInJobFrom": 0,
+    "yearsInJobTo": 0,
+    "email": false,
+    "phone": false,
+    "worksAt": [],
+    "doesNotWorkAt": [],
+    "previouslyWorkedAt": [],
+    "doesNotPreviouslyWorkAt": [],
+    "personIs": [],
+    "personIsNot": [],
+    "previouslyAs": "",
+    "doesNotPreviouslyWorkAs": "",
+    "industry": "",
+    "level": ""
+}
+ 
+Make sure to adhere strictly to this format to avoid any errors.
+"""
+
+
+
+
+
+system_instruction_suggestion = """
+You are an assistant tasked with extracting specific information from user inputs where applicable. Follow these instructions carefully to extract and structure the required details.
+ 
+Extraction Requirements:
+1. Job Title:
+    a) Extract the job titles mentioned in the user input.
+    b) Exclude any gender-related terms (e.g., m/f/d, w/m/d).
+    c) Format as a list.
+    d) Ensure the job titles are in the original language and if exist variation on gender in german language, add it (e.g., 'Software Engineer' then add 'Software Engineerin' as well). ALWAYS ADD THE GENDER VARIATION IN GERMAN LANGUAGE!
+    e) Provide 2-4 job title suggestions. This applies both when a job title is explicitly mentioned in the input and when no job titles are identified. For each suggested job title, also include its gender variant in German (if applicable). Ensure all suggestions and their gender variants are included in the output list.
+ 
+2. City:
+    a) Extract the city related to the job position.
+    b) Maintain the original language (fix typos if necessary).
+    c) Do not translate the city name.
+ 
+3. Country:
+    a) Extract the country related to the job position.
+    b) Maintain the original language (fix typos if necessary).
+    c) Do not translate the country name.
+ 
+4. Radius:
+    a) Extract the distance to the location specified.
+    b) Format as a numerical value.
+ 
+5. Mandatory Skills:
+    a) Extract key skills required for the role.
+    b) Provide shorter versions of the skills (e.g., 'python' instead of 'Python programming language').
+ 
+6. Optional Skills:
+    a) Extract desirable skills that are beneficial for the role.
+    b) Provide shorter versions of the skills (e.g., 'python' instead of 'Python programming language').
+    c) Educational level if mentioned add as skill (e.g., 'Master's degree' then add 'Master's degree' as well)
+    d) For educational level add if makes sense the field of study (e.g., 'Master's degree in Computer Science' then add 'Computer Science' as well)
+    e) Provide 2-6 skills suggestions. If already exists large number of skills, add just 2-3 and if there is small number of skills, expand them with 6-7 skills, and so on.
+ 
+7. Languages Required:
+    a) Extract the languages required for the role.
+    b) Format as two lists (mandatory and optional languages).
+ 
+8. Years of Experience Required:
+    a) Extract the required years of experience.
+    b) Specify as a range (from minimum to maximum).
+ 
+9. Years in Job:
+    a) Extract the number of years the person should have been in the current job position.
+    b) Specify as a range (from minimum to maximum).
+ 
+10. Email:
+    a) Indicate whether an email address is required in the applicant's profile.
+    b) Format as a boolean (true or false).
+ 
+11. Phone:
+    a) Indicate whether a phone number is required in the applicant's profile.
+    b) Format as a boolean (true or false).
+ 
+12. Company Preferences:
+    a) Extract preferences for company names. Categories:
+        - worksAt: List of preferred companies.
+        - doesNotWorkAt: List of companies to avoid.
+        - previouslyWorkedAt: List of companies the applicant has worked at before.
+        - doesNotPreviouslyWorkAt: List of companies the applicant should not have worked at before.
+    b) Exclude industry mentions.
+    c) Exclude word startup as it is not considered as a company name. (e.g. previously worked at a startup should not be considered as a company name)
+    d) DO NOT ADD STARTUP AS A COMPANY NAME!
+ 
+13. Person Is:
+    a) From the job description, identify if any of the following descriptors are explicitly mentioned: 'Female', 'Male', 'Consultant', 'Executive', 'Freelancer', 'Scientist', 'Student'.
+    b) If a descriptor is mentioned, include it in the personIs list.
+    c) Format the extracted descriptors as a list.
  
 14. Person Is Not:
     a) Extract descriptors the person should not be (e.g., 'Consultant', 'Executive', 'Freelancer', 'Scientist', 'Student').
@@ -1907,6 +2037,12 @@ def display_login_form():
                 
 def data_extraction(job_description, suggestions="False"):
     instruction = system_instruction.replace("{SUGGESTION}", suggestions)
+    
+    if suggestions == "True":
+        instruction = system_instruction_suggestion
+    else:
+        instruction = system_instruction
+        
     completion = client.chat.completions.create(
                   model='gpt-4o',
                   temperature=0,
@@ -1917,6 +2053,7 @@ def data_extraction(job_description, suggestions="False"):
                 ])
     
     generated_text = completion.choices[0].message.content  
+    print(generated_text)
     try:
         parsed_output = parse_gpt_output(generated_text)
         return parsed_output
