@@ -1666,6 +1666,7 @@ class GptOutput(BaseModel):
     doesNotPreviouslyWorkAs: Optional[str] = None
     lang: Optional[str] = 'en'
     level: Optional[str] = None
+    industry: Optional[str] = None
     
     @validator('jobTitle', pre=True, always=True)
     def set_default_for_job_title(cls, v):
@@ -1767,7 +1768,7 @@ Extraction Requirements:
     a) Extract the job titles mentioned in the user input.
     b) Exclude any gender-related terms (e.g., m/f/d, w/m/d).
     c) Format as a list.
-    d) Ensure the job titles are in the original language and if exist variation on gender in german language, add it (e.g., 'Software Engineer' then add 'Software Engineerin' as well). ALWAYS ADD THE GENDER VARIATION IN GERMAN LANGUAGE!
+    d) When dealing with German job titles, always include gender variations. For example, if a job title is "Software Engineer," add "Software Engineerin" as well. Ensure this gender normalization is only applied to German job titles and not to English titles that do not require it (e.g., "Sales Representative" should not be altered).
  
 2. City:
     a) Extract the city related to the job position.
@@ -1820,8 +1821,8 @@ Extraction Requirements:
         - previouslyWorkedAt: List of companies the applicant has worked at before.
         - doesNotPreviouslyWorkAt: List of companies the applicant should not have worked at before.
     b) Exclude industry mentions.
-    c) Exclude word startup as it is not considered as a company name. (e.g. previously worked at a startup should not be considered as a company name)
-    d) DO NOT ADD STARTUP AS A COMPANY NAME!
+    c) Exclude words startup, start-up and 'start up' as it is not considered as a company name. (e.g. previously worked at a startup should not be considered as a company name)
+    d) DO NOT ADD STARTUP, START UP, START-UP AS A COMPANY NAME!
  
 13. Person Is:
     a) From the job description, identify if any of the following descriptors are explicitly mentioned: 'Consultant', 'Executive', 'Freelancer', 'Scientist', 'Student'.
@@ -1841,8 +1842,11 @@ Extraction Requirements:
     b) Format as a string.
  
 17. Industry:
-    a) Extract the sector or field of the job position (e.g., finance, accounting).
-    b) Format as a string.
+    a) Extract the sector or field of the job position. The only options are: 'Agriculture', 'Architecture and Planning', 'Arts and Culture', 'Audit, Tax and Legal', 'Automotive', 'Aviation and Aerospace', 'Banks and Financial Services', 'Chemicals', 'Construction', 'Consultancy', 'Consumer Goods and Retail', 'Education, Training and Science', 'Energy, Water and Environment', 'Entertainment', 'Gambling and Casinos', 'Health and Wellness', 'HR Services', 'Industrial and Mechanical Engineering', 'Insurance', 'IT and Internet', 'Leisure, Tourism and Gastronomy', 'Marketing, PR and Design', 'Media and Publishing', 'Pharmaceuticals', 'Public Service, Federations and Institutions', 'Real Estate', 'Sport', 'Telecommunication', 'Transport and Logistics', 'Other Sectors'
+    b) Ensure that the industry extracted is always one of the options listed above.
+    c) If the user input does not directly match one of the options, infer the closest industry based on the provided information.
+    d) Always return the industry as a formatted string.
+    e) THIS CANNOT BE EMPTY. YOU MUST RETURN AN INDUSTRY.
  
 18. Seniority Level:
     a) If mentioned, extract the seniority level (e.g., 'senior', 'junior', 'medior').
@@ -1896,7 +1900,8 @@ Extraction Requirements:
     b) Exclude any gender-related terms (e.g., m/f/d, w/m/d).
     c) Format as a list.
     d) Ensure the job titles are in the original language and if exist variation on gender in german language, add it (e.g., 'Software Engineer' then add 'Software Engineerin' as well). ALWAYS ADD THE GENDER VARIATION IN GERMAN LANGUAGE!
-    e) Provide 2-4 job title suggestions. This applies both when a job title is explicitly mentioned in the input and when no job titles are identified. For each suggested job title, also include its gender variant in German (if applicable). Ensure all suggestions and their gender variants are included in the output list.
+    e) When dealing with German job titles, always include gender variations. For example, if a job title is "Software Engineer," add "Software Engineerin" as well. Ensure this gender normalization is only applied to German job titles and not to English titles that do not require it (e.g., "Sales Representative" should not be altered).
+    f) Ensure that you ALWAYS add two or three or four similar job titles and their gender variations (if they exists - which is described above).
  
 2. City:
     a) Extract the city related to the job position.
@@ -1950,8 +1955,8 @@ Extraction Requirements:
         - previouslyWorkedAt: List of companies the applicant has worked at before.
         - doesNotPreviouslyWorkAt: List of companies the applicant should not have worked at before.
     b) Exclude industry mentions.
-    c) Exclude word startup as it is not considered as a company name. (e.g. previously worked at a startup should not be considered as a company name)
-    d) DO NOT ADD STARTUP AS A COMPANY NAME!
+    c) Exclude words startup, start-up and 'start up' as it is not considered as a company name. (e.g. previously worked at a startup should not be considered as a company name)
+    d) DO NOT ADD STARTUP, START UP, START-UP AS A COMPANY NAME!
  
 13. Person Is:
     a) From the job description, identify if any of the following descriptors are explicitly mentioned: 'Consultant', 'Executive', 'Freelancer', 'Scientist', 'Student'.
@@ -1971,8 +1976,11 @@ Extraction Requirements:
     b) Format as a string.
  
 17. Industry:
-    a) Extract the sector or field of the job position (e.g., finance, accounting).
-    b) Format as a string.
+    a) Extract the sector or field of the job position. The only options are: 'Agriculture', 'Architecture and Planning', 'Arts and Culture', 'Audit, Tax and Legal', 'Automotive', 'Aviation and Aerospace', 'Banks and Financial Services', 'Chemicals', 'Construction', 'Consultancy', 'Consumer Goods and Retail', 'Education, Training and Science', 'Energy, Water and Environment', 'Entertainment', 'Gambling and Casinos', 'Health and Wellness', 'HR Services', 'Industrial and Mechanical Engineering', 'Insurance', 'IT and Internet', 'Leisure, Tourism and Gastronomy', 'Marketing, PR and Design', 'Media and Publishing', 'Pharmaceuticals', 'Public Service, Federations and Institutions', 'Real Estate', 'Sport', 'Telecommunication', 'Transport and Logistics', 'Other Sectors'
+    b) Ensure that the industry extracted is always one of the options listed above.
+    c) If the user input does not directly match one of the options, infer the closest industry based on the provided information.
+    d) Always return the industry as a formatted string.
+    e) THIS CANNOT BE EMPTY. YOU MUST RETURN AN INDUSTRY.
  
 18. Seniority Level:
     a) If mentioned, extract the seniority level (e.g., 'senior', 'junior', 'medior').
@@ -2173,7 +2181,7 @@ def query_languages_v3(mandatory_languages=[], optional_languages=[]):
 def boolean_query_v2(job_title, city, country, radius, mandatory_skills, optional_skills,
                                 mandatory_languages, optional_languages, yearsOfExperienceFrom, yearsOfExperienceTo, yearsInJobFrom, yearsInJobTo,
                                 email, phone, worksAt, doesNotWorkAt, previouslyWorkedAt, doesNotPreviouslyWorkAt,
-                                personIs, personIsNot, doesNotPreviouslyWorkAs, previouslyAs, lang, level):
+                                personIs, personIsNot, doesNotPreviouslyWorkAs, previouslyAs, lang, level, industry):
     
     query = ""
     
@@ -2251,6 +2259,13 @@ def boolean_query_v2(job_title, city, country, radius, mandatory_skills, optiona
         
     if level and (level.lower() != 'senior'):
         query += f' AS {level}'
+    
+    INDUSTRIES = ['Agriculture', 'Architecture and Planning', 'Arts and Culture', 'Audit, Tax and Legal', 'Automotive', 'Aviation and Aerospace', 'Banks and Financial Services', 'Chemicals', 'Construction', 'Consultancy', 'Consumer Goods and Retail', 'Education, Training and Science', 'Energy, Water and Environment', 'Entertainment', 'Gambling and Casinos', 'Health and Wellness', 'HR Services', 'Industrial and Mechanical Engineering', 'Insurance', 'IT and Internet', 'Leisure, Tourism and Gastronomy', 'Marketing, PR and Design', 'Media and Publishing', 'Pharmaceuticals', 'Public Service, Federations and Institutions', 'Real Estate', 'Sport', 'Telecommunication', 'Transport and Logistics', 'Other Sectors']  
+    if industry:
+        if industry in INDUSTRIES:
+            query += f' INDUSTRY "{industry}"'
+        else:
+            query += f' INDUSTRY "Other Sectors"'
             
     return query
                 
@@ -2297,11 +2312,12 @@ def display_main_app():
                 previouslyAs = gpt_output.model_dump().get("previouslyAs")
                 doesNotPreviouslyWorkAs = gpt_output.model_dump().get("doesNotPreviouslyWorkAs")
                 level = gpt_output.model_dump().get("level")
+                industry = gpt_output.model_dump().get("industry")
         
                 result = boolean_query_v2(job_title, city, country, radius, mandatory_skills, optional_skills,
                                         mandatory_languages, optional_languages, yearsOfExperienceFrom, yearsOfExperienceTo, yearsInJobFrom, yearsInJobTo,
                                         email, phone, worksAt, doesNotWorkAt, previouslyWorkedAt, doesNotPreviouslyWorkAt,
-                                        personIs, personIsNot, doesNotPreviouslyWorkAs, previouslyAs, lang_option, level)
+                                        personIs, personIsNot, doesNotPreviouslyWorkAs, previouslyAs, lang_option, level, industry)
                 st.write(result)
                 
  
