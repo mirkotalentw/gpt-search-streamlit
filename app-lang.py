@@ -1843,10 +1843,11 @@ Extraction Requirements:
  
 17. Industry:
     a) Extract the sector or field of the job position. The only options are: 'Agriculture', 'Architecture and Planning', 'Arts and Culture', 'Audit, Tax and Legal', 'Automotive', 'Aviation and Aerospace', 'Banks and Financial Services', 'Chemicals', 'Construction', 'Consultancy', 'Consumer Goods and Retail', 'Education, Training and Science', 'Energy, Water and Environment', 'Entertainment', 'Gambling and Casinos', 'Health and Wellness', 'HR Services', 'Industrial and Mechanical Engineering', 'Insurance', 'IT and Internet', 'Leisure, Tourism and Gastronomy', 'Marketing, PR and Design', 'Media and Publishing', 'Pharmaceuticals', 'Public Service, Federations and Institutions', 'Real Estate', 'Sport', 'Telecommunication', 'Transport and Logistics', 'Other Sectors'
-    b) Ensure that the industry extracted is always one of the options listed above.
-    c) If the user input does not directly match one of the options, infer the closest industry based on the provided information.
-    d) Always return the industry as a formatted string.
-    e) THIS CANNOT BE EMPTY. YOU MUST RETURN AN INDUSTRY.
+    b) German names of the industries are also allowed and here is their list: 'Architektur und Planung', 'Automobil', 'Banken und Finanzdienstleistungen', 'Beratung und Consulting', 'Chemieindustrie', 'Energie, Wasser und Umwelt', 'Erziehung, Bildung und Wissenschaft', 'Freizeit, Tourismus und Gastronomie', 'Gambling and Casinos', 'Gesundheit und Wellness', 'Immobilien', 'Industrie und Maschinenbau', 'Internet und Informationstechnologie', 'Konstruktion', 'Konsumgüter und Handel', 'Kunst und Kultur', 'Landwirtschaft', 'Luft- und Raumfahrt', 'Marketing, PR und Design', 'Medien und Verlage', 'Öffentlicher Dienst, Verbände und Einrichtungen', 'Personaldienstleistungen', 'Pharmazeutika', 'Sport', 'Telekommunikation', 'Transport und Logistik', 'Unterhaltung', 'Versicherungen', 'Wirtschaftsprüfung, Steuern und Recht', 'Sonstige Branchen'
+    c) Ensure that the industry extracted is always one of the options listed above. The language of the industry is {LANG}.
+    d) If the user input does not directly match one of the options, infer the closest industry based on the provided information.
+    e) Always return the industry as a formatted string.
+    f) THIS CANNOT BE EMPTY. YOU MUST RETURN AN INDUSTRY.
  
 18. Seniority Level:
     a) If mentioned, extract the seniority level (e.g., 'senior', 'junior', 'medior').
@@ -1977,10 +1978,11 @@ Extraction Requirements:
  
 17. Industry:
     a) Extract the sector or field of the job position. The only options are: 'Agriculture', 'Architecture and Planning', 'Arts and Culture', 'Audit, Tax and Legal', 'Automotive', 'Aviation and Aerospace', 'Banks and Financial Services', 'Chemicals', 'Construction', 'Consultancy', 'Consumer Goods and Retail', 'Education, Training and Science', 'Energy, Water and Environment', 'Entertainment', 'Gambling and Casinos', 'Health and Wellness', 'HR Services', 'Industrial and Mechanical Engineering', 'Insurance', 'IT and Internet', 'Leisure, Tourism and Gastronomy', 'Marketing, PR and Design', 'Media and Publishing', 'Pharmaceuticals', 'Public Service, Federations and Institutions', 'Real Estate', 'Sport', 'Telecommunication', 'Transport and Logistics', 'Other Sectors'
-    b) Ensure that the industry extracted is always one of the options listed above.
-    c) If the user input does not directly match one of the options, infer the closest industry based on the provided information.
-    d) Always return the industry as a formatted string.
-    e) THIS CANNOT BE EMPTY. YOU MUST RETURN AN INDUSTRY.
+    b) German names of the industries are also allowed and here is their list: 'Architektur und Planung', 'Automobil', 'Banken und Finanzdienstleistungen', 'Beratung und Consulting', 'Chemieindustrie', 'Energie, Wasser und Umwelt', 'Erziehung, Bildung und Wissenschaft', 'Freizeit, Tourismus und Gastronomie', 'Gambling and Casinos', 'Gesundheit und Wellness', 'Immobilien', 'Industrie und Maschinenbau', 'Internet und Informationstechnologie', 'Konstruktion', 'Konsumgüter und Handel', 'Kunst und Kultur', 'Landwirtschaft', 'Luft- und Raumfahrt', 'Marketing, PR und Design', 'Medien und Verlage', 'Öffentlicher Dienst, Verbände und Einrichtungen', 'Personaldienstleistungen', 'Pharmazeutika', 'Sport', 'Telekommunikation', 'Transport und Logistik', 'Unterhaltung', 'Versicherungen', 'Wirtschaftsprüfung, Steuern und Recht', 'Sonstige Branchen'
+    c) Ensure that the industry extracted is always one of the options listed above. The language of the industry is {LANG}.
+    d) If the user input does not directly match one of the options, infer the closest industry based on the provided information.
+    e) Always return the industry as a formatted string.
+    f) THIS CANNOT BE EMPTY. YOU MUST RETURN AN INDUSTRY.
  
 18. Seniority Level:
     a) If mentioned, extract the seniority level (e.g., 'senior', 'junior', 'medior').
@@ -2043,13 +2045,15 @@ def display_login_form():
             else:
                 st.error("Incorrect username or password.")
                 
-def data_extraction(job_description, suggestions="False"):
+def data_extraction(job_description, lang_option, suggestions="False"):
     instruction = system_instruction.replace("{SUGGESTION}", suggestions)
     
     if suggestions == "True":
         instruction = system_instruction_suggestion
     else:
         instruction = system_instruction
+        
+    instruction = instruction.replace("{LANG}", lang_option)
         
     completion = client.chat.completions.create(
                   model='gpt-4o',
@@ -2260,12 +2264,19 @@ def boolean_query_v2(job_title, city, country, radius, mandatory_skills, optiona
     if level and (level.lower() != 'senior'):
         query += f' AS {level}'
     
-    INDUSTRIES = ['Agriculture', 'Architecture and Planning', 'Arts and Culture', 'Audit, Tax and Legal', 'Automotive', 'Aviation and Aerospace', 'Banks and Financial Services', 'Chemicals', 'Construction', 'Consultancy', 'Consumer Goods and Retail', 'Education, Training and Science', 'Energy, Water and Environment', 'Entertainment', 'Gambling and Casinos', 'Health and Wellness', 'HR Services', 'Industrial and Mechanical Engineering', 'Insurance', 'IT and Internet', 'Leisure, Tourism and Gastronomy', 'Marketing, PR and Design', 'Media and Publishing', 'Pharmaceuticals', 'Public Service, Federations and Institutions', 'Real Estate', 'Sport', 'Telecommunication', 'Transport and Logistics', 'Other Sectors']  
+    INDUSTRIES_EN = ['Agriculture', 'Architecture and Planning', 'Arts and Culture', 'Audit, Tax and Legal', 'Automotive', 'Aviation and Aerospace', 'Banks and Financial Services', 'Chemicals', 'Construction', 'Consultancy', 'Consumer Goods and Retail', 'Education, Training and Science', 'Energy, Water and Environment', 'Entertainment', 'Gambling and Casinos', 'Health and Wellness', 'HR Services', 'Industrial and Mechanical Engineering', 'Insurance', 'IT and Internet', 'Leisure, Tourism and Gastronomy', 'Marketing, PR and Design', 'Media and Publishing', 'Pharmaceuticals', 'Public Service, Federations and Institutions', 'Real Estate', 'Sport', 'Telecommunication', 'Transport and Logistics', 'Other Sectors']  
+    INDUSTRIES_DE = ['Architektur und Planung', 'Automobil', 'Banken und Finanzdienstleistungen', 'Beratung und Consulting', 'Chemieindustrie', 'Energie, Wasser und Umwelt', 'Erziehung, Bildung und Wissenschaft', 'Freizeit, Tourismus und Gastronomie', 'Gambling and Casinos', 'Gesundheit und Wellness', 'Immobilien', 'Industrie und Maschinenbau', 'Internet und Informationstechnologie', 'Konstruktion', 'Konsumgüter und Handel', 'Kunst und Kultur', 'Landwirtschaft', 'Luft- und Raumfahrt', 'Marketing, PR und Design', 'Medien und Verlage', 'Öffentlicher Dienst, Verbände und Einrichtungen', 'Personaldienstleistungen', 'Pharmazeutika', 'Sport', 'Telekommunikation', 'Transport und Logistik', 'Unterhaltung', 'Versicherungen', 'Wirtschaftsprüfung, Steuern und Recht', 'Sonstige Branchen']
     if industry:
-        if industry in INDUSTRIES:
-            query += f' INDUSTRY "{industry}"'
+        if lang == 'de':
+            if industry in INDUSTRIES_DE:
+                query += f' INDUSTRY "{industry}"'
+            else:
+                query += f' INDUSTRY "Sonstige Branchen"'
         else:
-            query += f' INDUSTRY "Other Sectors"'
+            if industry in INDUSTRIES_EN:
+                query += f' INDUSTRY "{industry}"'
+            else:
+                query += f' INDUSTRY "Other Sectors"'
             
     return query
                 
@@ -2284,7 +2295,7 @@ def display_main_app():
     if st.button('Generate Text'):
         if user_input:
             with st.spinner('Generating text... Please wait'):
-                gpt_output = data_extraction(user_input, suggestion)
+                gpt_output = data_extraction(user_input, lang_option, suggestion)
                 job_title = gpt_output.model_dump().get("jobTitle")
                 city = gpt_output.model_dump().get("city")
                 country = gpt_output.model_dump().get("country")
