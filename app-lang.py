@@ -1769,6 +1769,8 @@ Extraction Requirements:
     b) Exclude any gender-related terms (e.g., m/f/d, w/m/d).
     c) Format as a list.
     d) When dealing with German job titles, always include gender variations. For example, if a job title is "Software Engineer," add "Software Engineerin" as well. Ensure this gender normalization is only applied to German job titles and not to English titles that do not require it (e.g., "Sales Representative" should not be altered).
+    e) YOU MUST ENSURE THAT YOU ADD TO THE JOB TITLE GERMAN GENDER VARIATION IF IT EXISTS (NO MATTER OF LANGUAGE)! 
+    Example: If the user inputs "Software Engineer," you should return ["Software Engineer", "Software Engineerin"].
  
 2. City:
     a) Extract the city related to the job position.
@@ -1828,6 +1830,7 @@ Extraction Requirements:
     a) From the job description, identify if any of the following descriptors are explicitly mentioned: 'Consultant', 'Executive', 'Freelancer', 'Scientist', 'Student'.
     b) If a descriptor is mentioned, include it in the personIs list.
     c) Format the extracted descriptors as a list.
+    d) If the user is looking for data scientist, do not add 'Scientist' as a personIs descriptor.
  
 14. Person Is Not:
     a) Extract descriptors the person should not be (e.g., 'Consultant', 'Executive', 'Freelancer', 'Scientist', 'Student').
@@ -1902,7 +1905,8 @@ Extraction Requirements:
     c) Format as a list.
     d) Ensure the job titles are in the original language and if exist variation on gender in german language, add it (e.g., 'Software Engineer' then add 'Software Engineerin' as well). ALWAYS ADD THE GENDER VARIATION IN GERMAN LANGUAGE!
     e) When dealing with German job titles, always include gender variations. For example, if a job title is "Software Engineer," add "Software Engineerin" as well. Ensure this gender normalization is only applied to German job titles and not to English titles that do not require it (e.g., "Sales Representative" should not be altered).
-    f) Ensure that you ALWAYS add two or three or four similar job titles and their gender variations (if they exists - which is described above).
+    f) IMPORTANT: IF JOB TITLE IS PROVIDED, YOU MUST ALWAYS SUGGEST 2-3 MORE SIMILAR JOB TITLE OPTIONS. ALSO, FOR THOSE SUGGESTIONS YOU MUST DO GERMAN GENDER VARIANT IF IT EXISTS (DESCRIBED ABOVE)!
+    Example: (I am looking for a Data scitentist) -> jobTitle: ['Data Scientist', 'Data Scientistin', 'Data Engineer', 'Data Engineerin']
  
 2. City:
     a) Extract the city related to the job position.
@@ -1928,6 +1932,7 @@ Extraction Requirements:
     c) Educational level if mentioned add as skill (e.g., 'Master's degree' then add 'Master's degree' as well)
     d) For educational level add if makes sense the field of study (e.g., 'Master's degree in Computer Science' then add 'Computer Science' as well)
     e) Provide 2-6 skills suggestions. If already exists large number of skills, add just 2-3 and if there is small number of skills, expand them with 6-7 skills, and so on.
+    f) YOU MUST ALWAYS SUGGEST 2-6 SKILLS BUT ONLY IF THERE IS NOT ALREADY LARGE NUMBER OF SKILLS PROVIDED! IF THERE IS NO SKILLS AT ALL PROVIDED, YOU MUST SUGGEST 6-7 SKILLS BASED ON JOB TITLE! 
  
 7. Languages Required:
     a) Extract the languages required for the role.
@@ -1963,6 +1968,7 @@ Extraction Requirements:
     a) From the job description, identify if any of the following descriptors are explicitly mentioned: 'Consultant', 'Executive', 'Freelancer', 'Scientist', 'Student'.
     b) If a descriptor is mentioned, include it in the personIs list.
     c) Format the extracted descriptors as a list.
+    d) If the user is looking for data scientist, do not add 'Scientist' as a personIs descriptor.
  
 14. Person Is Not:
     a) Extract descriptors the person should not be (e.g., 'Consultant', 'Executive', 'Freelancer', 'Scientist', 'Student').
@@ -2045,10 +2051,9 @@ def display_login_form():
             else:
                 st.error("Incorrect username or password.")
                 
-def data_extraction(job_description, lang_option, suggestions="False"):
-    instruction = system_instruction.replace("{SUGGESTION}", suggestions)
+def data_extraction(job_description, lang_option, suggestions=False):
     
-    if suggestions == "True":
+    if suggestions == True:
         instruction = system_instruction_suggestion
     else:
         instruction = system_instruction
@@ -2287,15 +2292,19 @@ def display_main_app():
     lang_option = st.selectbox(
     "Application language:",
     ("de", "en"))
-    suggestion = st.selectbox(
-    "Job titles expansion (AI suggesting):",
-    ("True", "False"))
+    # suggestion = st.selectbox(
+    # "Job titles expansion (AI suggesting):",
+    # ("True", "False"))
     user_input = st.text_area("Enter your prompt:", height=50)
  
     if st.button('Generate Text'):
         if user_input:
             with st.spinner('Generating text... Please wait'):
-                gpt_output = data_extraction(user_input, lang_option, suggestion)
+                gpt_output = data_extraction(user_input, lang_option, False)
+                gpt_output_suggestion = data_extraction(user_input, lang_option, True)
+                job_title_suggestion = gpt_output_suggestion.model_dump().get("jobTitle")
+                mandatory_skills_suggestion = gpt_output_suggestion.model_dump().get("mandatorySkills")
+                optional_skills_suggestion = gpt_output_suggestion.model_dump().get("optionalSkills")
                 job_title = gpt_output.model_dump().get("jobTitle")
                 city = gpt_output.model_dump().get("city")
                 country = gpt_output.model_dump().get("country")
@@ -2329,7 +2338,16 @@ def display_main_app():
                                         mandatory_languages, optional_languages, yearsOfExperienceFrom, yearsOfExperienceTo, yearsInJobFrom, yearsInJobTo,
                                         email, phone, worksAt, doesNotWorkAt, previouslyWorkedAt, doesNotPreviouslyWorkAt,
                                         personIs, personIsNot, doesNotPreviouslyWorkAs, previouslyAs, lang_option, level, industry)
-                st.write(result)
+                
+                result_ai = boolean_query_v2(job_title_suggestion, city, country, radius, mandatory_skills_suggestion, optional_skills_suggestion,
+                                        mandatory_languages, optional_languages, yearsOfExperienceFrom, yearsOfExperienceTo, yearsInJobFrom, yearsInJobTo,
+                                        email, phone, worksAt, doesNotWorkAt, previouslyWorkedAt, doesNotPreviouslyWorkAt,
+                                        personIs, personIsNot, doesNotPreviouslyWorkAs, previouslyAs, lang_option, level, industry)
+                
+                st.markdown("### Raw query")
+                st.markdown(result)
+                st.markdown("### Query with AI suggestions")
+                st.markdown(result_ai)
                 
  
 # Decide which part of the app to display based on login status
