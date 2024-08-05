@@ -2163,6 +2163,7 @@ def query_languages_v2(languages=[]):
 def query_languages_v3(mandatory_languages=[], optional_languages=[]):
     full_query = ""
     mandatory_query = ""
+    mandatory_langs, optional_langs = [], []
         
     if len(mandatory_languages) > 0:
         mandatory_langs = {lang for lang in mandatory_languages if lang.lower() in languages_all}
@@ -2266,13 +2267,13 @@ def boolean_query_v2(job_title, city, country, radius, mandatory_skills, optiona
         query += f' AS {level}'
     
     INDUSTRIES_EN = ['Agriculture', 'Architecture and Planning', 'Arts and Culture', 'Audit, Tax and Legal', 'Automotive', 'Aviation and Aerospace', 'Banks and Financial Services', 'Chemicals', 'Construction', 'Consultancy', 'Consumer Goods and Retail', 'Education, Training and Science', 'Energy, Water and Environment', 'Entertainment', 'Gambling and Casinos', 'Health and Wellness', 'HR Services', 'Industrial and Mechanical Engineering', 'Insurance', 'IT and Internet', 'Leisure, Tourism and Gastronomy', 'Marketing, PR and Design', 'Media and Publishing', 'Pharmaceuticals', 'Public Service, Federations and Institutions', 'Real Estate', 'Sport', 'Telecommunication', 'Transport and Logistics', 'Other Sectors']  
-    INDUSTRIES_DE = ['Architektur und Planung', 'Automobil', 'Banken und Finanzdienstleistungen', 'Beratung und Consulting', 'Chemieindustrie', 'Energie, Wasser und Umwelt', 'Erziehung, Bildung und Wissenschaft', 'Freizeit, Tourismus und Gastronomie', 'Gambling and Casinos', 'Gesundheit und Wellness', 'Immobilien', 'Industrie und Maschinenbau', 'Internet und Informationstechnologie', 'Konstruktion', 'Konsumgüter und Handel', 'Kunst und Kultur', 'Landwirtschaft', 'Luft- und Raumfahrt', 'Marketing, PR und Design', 'Medien und Verlage', 'Öffentlicher Dienst, Verbände und Einrichtungen', 'Personaldienstleistungen', 'Pharmazeutika', 'Sport', 'Telekommunikation', 'Transport und Logistik', 'Unterhaltung', 'Versicherungen', 'Wirtschaftsprüfung, Steuern und Recht', 'Sonstige Branchen']
+    INDUSTRIES_DE = {'Architektur und Planung': 'Architecture and Planning', 'Automobil': 'Automotive', 'Banken und Finanzdienstleistungen': 'Banks and Financial Services', 'Beratung und Consulting': 'Consultancy', 'Chemieindustrie': 'Chemicals', 'Energie, Wasser und Umwelt': 'Energy, Water and Environment', 'Erziehung, Bildung und Wissenschaft': 'Education, Training and Science', 'Freizeit, Tourismus und Gastronomie': 'Leisure, Tourism and Gastronomy', 'Gambling and Casinos': 'Gambling and Casinos', 'Gesundheit und Wellness': 'Health and Wellness', 'Immobilien': 'Real Estate', 'Industrie und Maschinenbau': 'Industrial and Mechanical Engineering', 'Internet und Informationstechnologie': 'IT and Internet', 'Konstruktion': 'Construction', 'Konsumgüter und Handel': 'Consumer Goods and Retail', 'Kunst und Kultur': 'Arts and Culture', 'Landwirtschaft': 'Agriculture', 'Luft- und Raumfahrt': 'Aviation and Aerospace', 'Marketing, PR und Design': 'Marketing, PR and Design', 'Medien und Verlage': 'Media and Publishing', 'Öffentlicher Dienst, Verbände und Einrichtungen': 'Public Service, Federations and Institutions', 'Personaldienstleistungen': 'HR Services', 'Pharmazeutika': 'Pharmaceuticals', 'Sport': 'Sport', 'Telekommunikation': 'Telecommunication', 'Transport und Logistik': 'Transport and Logistics', 'Unterhaltung': 'Entertainment', 'Versicherungen': 'Insurance', 'Wirtschaftsprüfung, Steuern und Recht': 'Audit, Tax and Legal', 'Sonstige Branchen': 'Other Sectors'}
     if industry:
         if lang == 'de':
-            if industry in INDUSTRIES_DE:
-                query += f' INDUSTRY "{industry}"'
+            if industry in INDUSTRIES_DE.keys():
+                query += f' INDUSTRY "{INDUSTRIES_DE[industry]}"'
             else:
-                query += f' INDUSTRY "Sonstige Branchen"'
+                query += f' INDUSTRY "Other Sectors"'
         else:
             if industry in INDUSTRIES_EN:
                 query += f' INDUSTRY "{industry}"'
