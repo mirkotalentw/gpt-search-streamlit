@@ -2142,9 +2142,15 @@ def query_location_v2(city=None, country=None, distance=0, lang='de'):
         location += f' DISTANCE 50'
         
     if location and country_normalized:
-        location += f' COUNTRY {country_normalized}'
+        if ' ' in country_normalized.strip():
+            location += f' COUNTRY "{country_normalized}"'
+        else:
+            location += f' COUNTRY {country_normalized}'
     elif country_normalized:
-        location = f' COUNTRY {country_normalized}'
+        if ' ' in country_normalized.strip():
+            location = f' COUNTRY "{country_normalized}"'
+        else:
+            location = f' COUNTRY {country_normalized}'
         
     return location
 
