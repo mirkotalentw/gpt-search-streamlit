@@ -1847,10 +1847,8 @@ Extraction Requirements:
 17. Industry:
     a) Extract the sector or field of the job position. The only options are: 'Agriculture', 'Architecture and Planning', 'Arts and Culture', 'Audit, Tax and Legal', 'Automotive', 'Aviation and Aerospace', 'Banks and Financial Services', 'Chemicals', 'Construction', 'Consultancy', 'Consumer Goods and Retail', 'Education, Training and Science', 'Energy, Water and Environment', 'Entertainment', 'Gambling and Casinos', 'Health and Wellness', 'HR Services', 'Industrial and Mechanical Engineering', 'Insurance', 'IT and Internet', 'Leisure, Tourism and Gastronomy', 'Marketing, PR and Design', 'Media and Publishing', 'Pharmaceuticals', 'Public Service, Federations and Institutions', 'Real Estate', 'Sport', 'Telecommunication', 'Transport and Logistics', 'Other Sectors'
     b) German names of the industries are also allowed and here is their list: 'Architektur und Planung', 'Automobil', 'Banken und Finanzdienstleistungen', 'Beratung und Consulting', 'Chemieindustrie', 'Energie, Wasser und Umwelt', 'Erziehung, Bildung und Wissenschaft', 'Freizeit, Tourismus und Gastronomie', 'Gambling and Casinos', 'Gesundheit und Wellness', 'Immobilien', 'Industrie und Maschinenbau', 'Internet und Informationstechnologie', 'Konstruktion', 'Konsumgüter und Handel', 'Kunst und Kultur', 'Landwirtschaft', 'Luft- und Raumfahrt', 'Marketing, PR und Design', 'Medien und Verlage', 'Öffentlicher Dienst, Verbände und Einrichtungen', 'Personaldienstleistungen', 'Pharmazeutika', 'Sport', 'Telekommunikation', 'Transport und Logistik', 'Unterhaltung', 'Versicherungen', 'Wirtschaftsprüfung, Steuern und Recht', 'Sonstige Branchen'
-    c) Ensure that the industry extracted is always one of the options listed above. The language of the industry is {LANG}.
-    d) If the user input does not directly match one of the options, infer the closest industry based on the provided information.
-    e) Always return the industry as a formatted string.
-    f) THIS CANNOT BE EMPTY. YOU MUST RETURN AN INDUSTRY.
+    c) Ensure that the industry extracted is ONLY if user explicitly mention it. The language of the industry is {LANG}.
+    d) If the user input does not directly match one of the options, infer the closest industry based on the provided industry.
  
 18. Seniority Level:
     a) If mentioned, extract the seniority level (e.g., 'senior', 'junior', 'medior').
@@ -1985,10 +1983,8 @@ Extraction Requirements:
 17. Industry:
     a) Extract the sector or field of the job position. The only options are: 'Agriculture', 'Architecture and Planning', 'Arts and Culture', 'Audit, Tax and Legal', 'Automotive', 'Aviation and Aerospace', 'Banks and Financial Services', 'Chemicals', 'Construction', 'Consultancy', 'Consumer Goods and Retail', 'Education, Training and Science', 'Energy, Water and Environment', 'Entertainment', 'Gambling and Casinos', 'Health and Wellness', 'HR Services', 'Industrial and Mechanical Engineering', 'Insurance', 'IT and Internet', 'Leisure, Tourism and Gastronomy', 'Marketing, PR and Design', 'Media and Publishing', 'Pharmaceuticals', 'Public Service, Federations and Institutions', 'Real Estate', 'Sport', 'Telecommunication', 'Transport and Logistics', 'Other Sectors'
     b) German names of the industries are also allowed and here is their list: 'Architektur und Planung', 'Automobil', 'Banken und Finanzdienstleistungen', 'Beratung und Consulting', 'Chemieindustrie', 'Energie, Wasser und Umwelt', 'Erziehung, Bildung und Wissenschaft', 'Freizeit, Tourismus und Gastronomie', 'Gambling and Casinos', 'Gesundheit und Wellness', 'Immobilien', 'Industrie und Maschinenbau', 'Internet und Informationstechnologie', 'Konstruktion', 'Konsumgüter und Handel', 'Kunst und Kultur', 'Landwirtschaft', 'Luft- und Raumfahrt', 'Marketing, PR und Design', 'Medien und Verlage', 'Öffentlicher Dienst, Verbände und Einrichtungen', 'Personaldienstleistungen', 'Pharmazeutika', 'Sport', 'Telekommunikation', 'Transport und Logistik', 'Unterhaltung', 'Versicherungen', 'Wirtschaftsprüfung, Steuern und Recht', 'Sonstige Branchen'
-    c) Ensure that the industry extracted is always one of the options listed above. The language of the industry is {LANG}.
-    d) If the user input does not directly match one of the options, infer the closest industry based on the provided information.
-    e) Always return the industry as a formatted string.
-    f) THIS CANNOT BE EMPTY. YOU MUST RETURN AN INDUSTRY.
+    c) Ensure that the industry extracted is ONLY if user explicitly mention it. The language of the industry is {LANG}.
+    d) If the user input does not directly match one of the options, infer the closest industry based on the provided industry.
  
 18. Seniority Level:
     a) If mentioned, extract the seniority level (e.g., 'senior', 'junior', 'medior').
