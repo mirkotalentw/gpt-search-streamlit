@@ -2073,7 +2073,7 @@ def display_login_form():
                 st.session_state['logged_in'] = True
                 st.success("Logged in successfully.")
                 # Using st.experimental_rerun() to force the app to rerun might help, but use it judiciously.
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.error("Incorrect username or password.")
                 
