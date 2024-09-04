@@ -1,3 +1,4 @@
+from io import BytesIO
 import re
 import time
 from openai import OpenAI
@@ -8,6 +9,7 @@ import json
 from pydantic import BaseModel, validator, Extra
 from typing import List, Optional
 import requests
+from st_audiorec import st_audiorec
  
 load_dotenv()
 openai_api_key = os.getenv('OPENAI_API_KEY')
@@ -1608,7 +1610,7 @@ languages_all = set(languages_en) | set(languages_de)
 
 
 def get_city_country(url, city, country, lang='de'):
-    print(url, city, country, lang)
+    # print(url, city, country, lang)
     city_normalized, country_normalized = "", ""
     if not lang:
         lang = 'de'
@@ -1621,7 +1623,6 @@ def get_city_country(url, city, country, lang='de'):
                   
         response = requests.get(url_request)
         data = response.json()
-        print(data)
         found_city = False
 
         for feature in data['features']:
@@ -2319,7 +2320,6 @@ def boolean_query_v2(job_title, city, country, radius, mandatory_skills, optiona
                 
                 
 def display_main_app():
-    start_time = time.time()
     st.title('AI Search Generator')
     selected_model = "gpt-4o"
     lang_option = st.selectbox(
@@ -2328,10 +2328,22 @@ def display_main_app():
     # suggestion = st.selectbox(
     # "Job titles expansion (AI suggesting):",
     # ("True", "False"))
-    user_input = st.text_area("Enter your prompt:", height=50)
+    wav_audio_data = st_audiorec()
+    # user_input = st.text_area("Enter your prompt:", height=50)
  
-    if st.button('Generate Text'):
+    if wav_audio_data is not None:
+        start_time = time.time()
+        audio_file = BytesIO(wav_audio_data)
+        audio_file.name = "audio.wav" 
+
+        user_input = client.audio.transcriptions.create(
+            model="whisper-1", 
+            file=audio_file,
+            response_format="text",
+            language=lang_option)
+        
         if user_input:
+            st.write(user_input)
             with st.spinner('Generating text... Please wait'):
                 # gpt_output = data_extraction(user_input, lang_option, False)
                 gpt_output_suggestion = data_extraction(user_input, lang_option, True)
