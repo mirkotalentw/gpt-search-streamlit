@@ -2162,25 +2162,26 @@ def query_location(city=None, country=None, distance=0):
 def query_location_v2(city=None, country=None, distance=0, lang='de'):
 
     location = ''
-    city_normalized, country_normalized = get_city_country(url="https://photon.komoot.io", city=city, country=country, lang=lang)
-    if city_normalized:
-        location += f' IN {city_normalized}'
-    
-    if location and distance > 0:
-        location += f' DISTANCE {distance}'
-    elif location and distance<=0:
-        location += f' DISTANCE 50'
+    if (city or country):
+        city_normalized, country_normalized = get_city_country(url="https://photon.komoot.io", city=city, country=country, lang=lang)
+        if city_normalized:
+            location += f' IN {city_normalized}'
         
-    if location and country_normalized:
-        if ' ' in country_normalized.strip():
-            location += f' COUNTRY "{country_normalized}"'
-        else:
-            location += f' COUNTRY {country_normalized}'
-    elif country_normalized:
-        if ' ' in country_normalized.strip():
-            location = f' COUNTRY "{country_normalized}"'
-        else:
-            location = f' COUNTRY {country_normalized}'
+        if location and distance > 0:
+            location += f' DISTANCE {distance}'
+        elif location and distance<=0:
+            location += f' DISTANCE 50'
+            
+        if location and country_normalized:
+            if ' ' in country_normalized.strip():
+                location += f' COUNTRY "{country_normalized}"'
+            else:
+                location += f' COUNTRY {country_normalized}'
+        elif country_normalized:
+            if ' ' in country_normalized.strip():
+                location = f' COUNTRY "{country_normalized}"'
+            else:
+                location = f' COUNTRY {country_normalized}'
         
     return location
 
@@ -2226,11 +2227,11 @@ def boolean_query_v2(job_title, city, country, radius, mandatory_skills, optiona
                                 personIs, personIsNot, doesNotPreviouslyWorkAs, previouslyAs, lang, level, industry):
     
     query = ""
-    
+
     if job_title and len(job_title) > 0:
         query = query_title_v2(job_title=job_title, lang=lang, suggestions=False)
     location_query = query_location_v2(city, country, radius, lang)
-    
+
     languages_query = ''
     # if languages:
     #     languages_query = query_languages_v2(languages)
@@ -2344,7 +2345,7 @@ def display_main_app():
         
         if user_input:
             st.write(user_input)
-            with st.spinner('Generating text... Please wait'):
+            with st.spinner('Generating queries... Please wait'):
                 # gpt_output = data_extraction(user_input, lang_option, False)
                 gpt_output_suggestion = data_extraction(user_input, lang_option, True)
                 # job_title_suggestion = gpt_output_suggestion.model_dump().get("jobTitle")
@@ -2380,7 +2381,7 @@ def display_main_app():
                 industry = gpt_output_suggestion.model_dump().get("industry")
                 job_title_suggestion = gpt_output_suggestion.model_dump().get("jobTitleSuggestions")
                 skills_suggestion = gpt_output_suggestion.model_dump().get("skillsSuggestions")
-        
+                
                 result = boolean_query_v2(job_title, city, country, radius, mandatory_skills, optional_skills,
                                         mandatory_languages, optional_languages, yearsOfExperienceFrom, yearsOfExperienceTo, yearsInJobFrom, yearsInJobTo,
                                         email, phone, worksAt, doesNotWorkAt, previouslyWorkedAt, doesNotPreviouslyWorkAt,
@@ -2398,7 +2399,7 @@ def display_main_app():
                 st.markdown("### Query with AI suggestions")
                 st.markdown(result_ai)
                 end_time = time.time()
-                st.write(f"Time taken: {end_time - start_time:.2f} seconds")
+                st.write(f"Total time taken: {end_time - start_time:.2f} seconds")
                 
  
 # Decide which part of the app to display based on login status
